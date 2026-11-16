@@ -1,19 +1,13 @@
-// marked-fast driver: renders every case in $MAKEFUN_INPUT_DIR/cases.json
-// through parse() from parse.js and writes the HTML strings, in case order,
-// to $MAKEFUN_OUTPUT_DIR/html.json. Each case is rendered alone; parse()
-// keeps nothing between calls.
-
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { join } from 'node:path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { parse } from './parse.js';
 
-const inputDir = process.env.MAKEFUN_INPUT_DIR ?? '/input';
-const outputDir = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
-
-type Case = { id: string; markdown: string };
-
-const cases = JSON.parse(readFileSync(join(inputDir, 'cases.json'), 'utf8')) as Case[];
-const html: string[] = new Array(cases.length);
-for (let i = 0; i < cases.length; i++) html[i] = parse(cases[i].markdown);
-mkdirSync(outputDir, { recursive: true });
-writeFileSync(join(outputDir, 'html.json'), JSON.stringify(html));
+const inDir = process.env.MAKEFUN_INPUT_DIR || '/input';
+const outDir = process.env.MAKEFUN_OUTPUT_DIR || '/output';
+const raw = fs.readFileSync(path.join(inDir, 'cases.json'), 'utf8');
+const list = JSON.parse(raw);
+const out: string[] = new Array(list.length);
+for (let k = 0; k < list.length; k++) {
+  out[k] = parse(list[k].markdown);
+}
+fs.writeFileSync(path.join(outDir, 'html.json'), JSON.stringify(out));
